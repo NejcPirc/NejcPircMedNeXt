@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
 
-from blocks import MedNeXtBlock, MedNeXtUpBlock, MedNeXtDownBlock
+from blocks import *
 
 class MedNeXt(nn.Module):
 
