@@ -10,6 +10,7 @@ from monai.data import DataLoader, Dataset, CacheDataset
 from monai.transforms import (
     Compose, LoadImaged, EnsureChannelFirstd, ScaleIntensityd, EnsureTyped, Resized
 )
+from monai.losses import DiceCELoss
 
 # --- UVOZ MODELA ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +18,8 @@ sys.path.append(os.path.join(current_dir, 'mednext_lib'))
 
 try:
     from MedNextV1 import MedNeXt
+    # Uvozimo vse bloke, da ne bo težav z OutBlock
+    from blocks import * 
     print("✅ Model uspešno uvožen.")
 except ImportError as e:
     print(f"❌ NAPAKA: {e}")
@@ -24,41 +27,40 @@ except ImportError as e:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, required=True)
-    parser.add_argument('--params_path', type=str, required=True)
-    parser.add_argument('--output_path', type=str, required=True)
+    # --- TUKAJ SO NOVE PRIVZETE VREDNOSTI (DEFAULTS) ---
+    parser.add_argument('--data_path', type=str, default="./data/nnUNet_raw/Dataset004_FinalTest")
+    parser.add_argument('--params_path', type=str, default="./params.json")
+    parser.add_argument('--output_path', type=str, default="./output_final")
     return parser.parse_args()
 
 def main():
     args = parse_args()
     
     # 1. PREBERI PARAMETRE
+    if not os.path.exists(args.params_path):
+        # Če params.json ne obstaja, ustvari privzetega
+        default_params = {"learning_rate": 0.001, "max_epochs": 50, "batch_size": 1, "model_size": "S"}
+        with open(args.params_path, 'w') as f:
+            json.dump(default_params, f)
+            
     with open(args.params_path, 'r') as f:
         params = json.load(f)
     print(f"⚙️  Parametri: {params}")
 
-    # 2. PRIPRAVA PODATKOV (Iskanje datotek)
-    # Predvidevamo strukturo: data_path/imagesTr in data_path/labelsTr
+    # 2. PRIPRAVA PODATKOV
     images_dir = os.path.join(args.data_path, "imagesTr")
     labels_dir = os.path.join(args.data_path, "labelsTr")
     
-    # Poiščemo vse slike (npr. Dummy_000_0000.nii.gz)
-    # Pazi: nnU-Net ima končnico _0000 za slike, labele pa ne.
     train_images = sorted(glob.glob(os.path.join(images_dir, "*.nii.gz")))
-    train_labels = []
-    
-    # Za vsako sliko poiščemo ustrezno labelo
     data_dicts = []
+    
     for img_path in train_images:
         filename = os.path.basename(img_path)
-        # Odstranimo _0000.nii.gz, da dobimo ID (npr. Dummy_000)
         case_id = filename.replace("_0000.nii.gz", "")
         lbl_path = os.path.join(labels_dir, f"{case_id}.nii.gz")
         
         if os.path.exists(lbl_path):
             data_dicts.append({"image": img_path, "label": lbl_path})
-        else:
-            print(f"⚠️ Opozorilo: Manjka labela za {filename}")
 
     if len(data_dicts) == 0:
         print("❌ NAPAKA: Nisem našel nobenih parov slik in label!")
@@ -66,22 +68,15 @@ def main():
         
     print(f"✅ Najdenih {len(data_dicts)} parov za trening.")
 
-    # 3. MONAI TRANSFORMS (Obdelava slik)
+    # 3. MONAI TRANSFORMS
     train_transforms = Compose([
         LoadImaged(keys=["image", "label"]),       
         EnsureChannelFirstd(keys=["image", "label"]), 
         ScaleIntensityd(keys=["image"]),           
-        
-        # --- DODANO: Spremenimo vse slike na fiksno velikost 128x128x128 ---
-        # mode=('trilinear', 'nearest') pomeni: sliko lepo zgladi, masko (labelo) pa pusti celoštevilsko (0 ali 1)
         Resized(keys=["image", "label"], spatial_size=(96, 96, 96), mode=("trilinear", "nearest")),
-        # -------------------------------------------------------------------
-        
         EnsureTyped(keys=["image", "label"]),      
     ])
 
-    # Dataset in DataLoader
-    # CacheDataset je hiter, ker shrani slike v RAM
     train_ds = CacheDataset(data=data_dicts, transform=train_transforms, cache_rate=1.0)
     train_loader = DataLoader(train_ds, batch_size=params['batch_size'], shuffle=True)
 
@@ -90,20 +85,21 @@ def main():
     print(f"🚀 Zaganjam na: {device}")
 
     model = MedNeXt(
-        in_channels=1,      # CT slika ima 1 kanal (sivine)
-        n_channels=32,      # Osnovno število filtrov (manjše za hitrejši test)
-        n_classes=2,        # 2 razreda: 0=ozadje, 1=žila
-        exp_r=2,            # Expansion ratio (iz MedNeXt papirja)
-        kernel_size=3,      # Velikost jedra
+        in_channels=1,
+        n_channels=32,
+        n_classes=2,
+        exp_r=2,
+        kernel_size=3,
         deep_supervision=False,
         do_res=True,
         do_res_up_down=True,
-        block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2] # Arhitektura (lahko prilagodimo)
+        block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2]
     ).to(device)
 
-    # 5. TRENING ZANKA (Loop)
+    # 5. TRENING
     optimizer = optim.AdamW(model.parameters(), lr=params['learning_rate'])
-    loss_function = nn.CrossEntropyLoss() # Preprosta loss funkcija za začetek
+    # DiceCELoss rabi [Batch, Channel, X, Y, Z]
+    loss_function = DiceCELoss(softmax=True, to_onehot_y=True)
 
     print("🏁 Začenjam trening...")
     model.train()
@@ -115,25 +111,19 @@ def main():
             step += 1
             inputs, labels = batch_data["image"].to(device), batch_data["label"].to(device)
             
-            # Labela mora biti 'long' tipa za CrossEntropy in brez kanala dimenzije
-            # labels pride [Batch, 1, X, Y, Z], rabimo [Batch, X, Y, Z]
-            labels = labels.squeeze(1).long() 
-
             optimizer.zero_grad()
-            outputs = model(inputs) # Forward pass
+            outputs = model(inputs)
             
-            # MedNeXt lahko vrne seznam (zaradi deep supervision), vzamemo prvega
             if isinstance(outputs, list) or isinstance(outputs, tuple):
                 outputs = outputs[0]
 
             loss = loss_function(outputs, labels)
-            loss.backward()         # Backward pass
-            optimizer.step()        # Update weights
+            loss.backward()
+            optimizer.step()
             
             epoch_loss += loss.item()
-            print(f"   Epoha {epoch+1}, Korak {step}, Loss: {loss.item():.4f}")
-
-        print(f"📊 Konec epohe {epoch+1}, Povprečni Loss: {epoch_loss/step:.4f}")
+            
+        print(f"Epoha {epoch+1}/{params['max_epochs']}, Loss: {epoch_loss/step:.4f}")
 
     # 6. SHRANJEVANJE
     os.makedirs(args.output_path, exist_ok=True)
