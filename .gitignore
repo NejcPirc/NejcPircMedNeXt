@@ -1,10 +1,19 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-venv/
-.env
 .DS_Store
+
+# Podatki in rezultati (Tega NE pošiljamo na Git!)
 data/
-output/
+Data/
+Izhod_Modeli/
+Napovedi_Koncne/
+Metrike_Koncne/
+output_final/
+predictions_final/
+metrics_final/
+
+# Velike datoteke
 *.pth
 *.nii.gz
+*.zip

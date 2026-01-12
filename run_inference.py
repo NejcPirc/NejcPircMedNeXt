@@ -1,95 +1,76 @@
-import argparse
-import os
-import sys
-import glob
+import os, sys, glob, argparse
 import torch
 import numpy as np
 import nibabel as nib
-from monai.transforms import (
-    Compose, LoadImaged, EnsureChannelFirstd, ScaleIntensityd, EnsureTyped, Resized
-)
-from monai.data import Dataset, DataLoader
+from monai.data import DataLoader, Dataset
+from monai.transforms import Compose, LoadImaged, EnsureChannelFirstd, ScaleIntensityd, Resized, EnsureTyped
 
-# --- UVOZ MODELA ---
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_dir, 'mednext_lib'))
+# Dodamo pot do modela (preprosto)
+sys.path.append('./mednext_lib')
+from MedNextV1 import MedNeXt
 
-try:
-    from MedNextV1 import MedNeXt
-    print("✅ Model uspešno uvožen.")
-except ImportError as e:
-    print(f"❌ NAPAKA: {e}")
-    sys.exit(1)
+# Argumenti
+parser = argparse.ArgumentParser()
+parser.add_argument('--input_path', default="./data/nnUNet_raw/Podatki/imagesTs")
+parser.add_argument('--model_path', default="./output_final/model_final.pth")
+parser.add_argument('--output_path', default="./predictions_final")
+args = parser.parse_args()
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    # --- PRIVZETE POTI ---
-    # Vzamemo slike iz TESTNEGA seta (imagesTs)
-    parser.add_argument('--input_path', type=str, default="./data/nnUNet_raw/Dataset004_FinalTest/imagesTs")
-    parser.add_argument('--model_path', type=str, default="./output_final/model_final.pth")
-    parser.add_argument('--output_path', type=str, default="./predictions_final")
-    return parser.parse_args()
+# 1. Priprava seznama slik
+print("Iscem slike za inferenco...")
+slike = sorted(glob.glob(f"{args.input_path}/*.nii.gz"))
+podatki = [{"image": s} for s in slike]
 
-def main():
-    args = parse_args()
-    
-    images = sorted(glob.glob(os.path.join(args.input_path, "*.nii.gz")))
-    if len(images) == 0:
-        print(f"❌ Nisem našel slik v {args.input_path}!")
-        sys.exit(1)
+print(f"Nasel {len(slike)} slik.")
+
+# 2. Transformacije
+# Nujno pomanjsanje na 96x96x96, ker je model tako treniran
+transforms = Compose([
+    LoadImaged(keys=["image"]),
+    EnsureChannelFirstd(keys=["image"]),
+    ScaleIntensityd(keys=["image"]),
+    Resized(keys=["image"], spatial_size=(96, 96, 96), mode="trilinear"),
+    EnsureTyped(keys=["image"]),
+])
+
+loader = DataLoader(Dataset(podatki, transform=transforms), batch_size=1, shuffle=False)
+
+# 3. Priprava modela
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = MedNeXt(
+    in_channels=1, n_channels=32, n_classes=2, exp_r=2, kernel_size=3,
+    deep_supervision=False, do_res=True, do_res_up_down=True,
+    block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2]
+).to(device)
+
+# Nalaganje uteži
+print(f"Nalagam model iz {args.model_path}...")
+model.load_state_dict(torch.load(args.model_path, map_location=device))
+model.eval()
+
+# 4. Napovedovanje
+os.makedirs(args.output_path, exist_ok=True)
+
+with torch.no_grad():
+    for i, batch in enumerate(loader):
+        inputs = batch["image"].to(device)
         
-    print(f"🔍 Našel {len(images)} slik za inferenco.")
-    
-    data_dicts = [{"image": img} for img in images]
+        # Forward pass
+        outputs = model(inputs)
+        
+        # Ce model vrne seznam, vzamemo prvega
+        if isinstance(outputs, list):
+            outputs = outputs[0]
 
-    infer_transforms = Compose([
-        LoadImaged(keys=["image"]),
-        EnsureChannelFirstd(keys=["image"]),
-        ScaleIntensityd(keys=["image"]),
-        Resized(keys=["image"], spatial_size=(96, 96, 96), mode="trilinear"),
-        EnsureTyped(keys=["image"]),
-    ])
+        # Argmax: verjetnosti spremenimo v 0 ali 1 (segmentacija)
+        pred = torch.argmax(outputs, dim=1).cpu().numpy()[0].astype(np.uint8)
+        
+        # Ime datoteke dobimo iz originalnega seznama
+        ime_datoteke = os.path.basename(slike[i])
+        pot_shranjevanja = f"{args.output_path}/{ime_datoteke}"
+        
+        # Shranimo kot Nifti (uporabimo identity matriko za affine)
+        nib.save(nib.Nifti1Image(pred, np.eye(4)), pot_shranjevanja)
+        print(f"Shranil: {ime_datoteke}")
 
-    ds = Dataset(data=data_dicts, transform=infer_transforms)
-    loader = DataLoader(ds, batch_size=1, shuffle=False)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    model = MedNeXt(
-        in_channels=1, n_channels=32, n_classes=2, exp_r=2, kernel_size=3,
-        deep_supervision=False, do_res=True, do_res_up_down=True,
-        block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2]
-    ).to(device)
-
-    print(f"📂 Nalagam uteži iz: {args.model_path}")
-    if not os.path.exists(args.model_path):
-        print("❌ Model ne obstaja! Najprej zaženi run_train.py")
-        sys.exit(1)
-
-    checkpoint = torch.load(args.model_path, map_location=device)
-    model.load_state_dict(checkpoint)
-    model.eval()
-
-    os.makedirs(args.output_path, exist_ok=True)
-    
-    print("🚀 Začenjam inferenco...")
-    with torch.no_grad():
-        for i, batch in enumerate(loader):
-            inputs = batch["image"].to(device)
-            original_path = data_dicts[i]["image"]
-            filename = os.path.basename(original_path)
-            
-            outputs = model(inputs)
-            if isinstance(outputs, list): outputs = outputs[0]
-
-            preds = torch.argmax(outputs, dim=1)
-            pred_np = preds.cpu().numpy()[0].astype(np.uint8)
-            
-            save_name = os.path.join(args.output_path, filename)
-            nib.save(nib.Nifti1Image(pred_np, np.eye(4)), save_name)
-            print(f"💾 Shranil: {save_name}")
-
-    print("✅ Končano!")
-
-if __name__ == '__main__':
-    main()
+print("Koncano.")

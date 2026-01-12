@@ -1,18 +1,21 @@
-# Uporabimo uradno PyTorch sliko z NVIDIA CUDA podporo
+# Uporabimo uradno PyTorch sliko
 FROM pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
 
-# Nastavimo delovno mapo v kontejnerju
+# Nastavimo delovno mapo
 WORKDIR /workspace
 
-# Namestimo sistemske knjižnice (npr. git, če bi ga rabili)
+# Namestimo sistemske knjižnice
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-# Kopiramo requirements.txt in namestimo Python knjižnice
+# Kopiramo requirements in namestimo Python pakete
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopiramo vso ostalo kodo v kontejner
+# Kopiramo celotno kodo projekta v kontejner
 COPY . .
 
-# Nastavimo, da se skripte lahko izvajajo
-RUN chmod +x run_train.py run_test.py run_inference.py
+# Povemo, da naj se skripte lahko izvajajo
+RUN chmod +x *.py
+
+# Privzeto zaženemo celoten pipeline (lahko pa uporabnik povozi ta ukaz)
+CMD ["python3", "run_all.py"]
