@@ -1,6 +1,0 @@
-{
-    "learning_rate": 0.001,
-    "max_epochs": 50,
-    "batch_size": 1,
-    "model_size": "S"
-}

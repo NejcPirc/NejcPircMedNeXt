@@ -18,4 +18,4 @@ COPY . .
 RUN chmod +x *.py
 
 # Privzeto zaženemo celoten pipeline (lahko pa uporabnik povozi ta ukaz)
-CMD ["python3", "run_all.py"]
+CMD ["python3", "vse.py"]

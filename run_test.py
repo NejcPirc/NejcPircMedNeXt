@@ -4,7 +4,7 @@ from monai.data import Dataset, DataLoader
 
 # Preprosti argumenti
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', default="./data/nnUNet_raw/Podatki/test_labels_ref")
+parser.add_argument('--data_path', default="./data/nnUNet_raw/Podatki/testne_labele")
 parser.add_argument('--predictions_path', default="./predictions_final")
 parser.add_argument('--output_path', default="./metrics_final")
 args = parser.parse_args()

@@ -6,3 +6,4 @@ tqdm
 scikit-image
 pandas
 nibabel
+scikit-image
