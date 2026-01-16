@@ -38,7 +38,7 @@ loader = DataLoader(Dataset(podatki, transform=transforms), batch_size=1, shuffl
 # 3. Priprava modela
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = MedNeXt(
-    in_channels=1, n_channels=32, n_classes=2, exp_r=2, kernel_size=3,
+    in_channels=1, n_channels=32, n_classes=2, exp_r=2, kernel_size=5,
     deep_supervision=False, do_res=True, do_res_up_down=True,
     block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2]
 ).to(device)

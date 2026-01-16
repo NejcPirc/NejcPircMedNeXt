@@ -5,7 +5,7 @@ Metoda: MedNeXt (Convolutional Neural Network)
 
 
 ## Segmentacija koronarnih arterij z metodo MedNeXt
-![alt text](image.png)
+![alt text](MedNeXt.png)
 1. Predstavitev izziva
 Bolezni srca in ožilja so vodilni vzrok smrti po svetu. Natančna segmentacija koronarnih arterij na 3D CTA (Computed Tomography Angiography) slikah je ključna za diagnozo.
 

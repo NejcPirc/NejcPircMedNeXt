@@ -1,101 +1,74 @@
-import os
-import sys
-import glob
-import argparse
-import json
-import torch
-import torch.optim as optim
-from monai.data import DataLoader, CacheDataset
-from monai.transforms import Compose, LoadImaged, EnsureChannelFirstd, ScaleIntensityd, Resized, EnsureTyped
-from monai.losses import DiceCELoss
+import os, shutil, glob
 from tqdm import tqdm
 
-# Uvoz modela
-sys.path.append('./mednext_lib')
-from MedNextV1 import MedNeXt
+# --- 1. NASTAVITVE POTI ---
+izvorne_mape = [
+    "/media/FastDataMama/izziv/data/1-200",
+    "/media/FastDataMama/izziv/data/201-400",
+    "/media/FastDataMama/izziv/data/401-600",
+    "/media/FastDataMama/izziv/data/601-800",
+    "/media/FastDataMama/izziv/data/801-1000"
+]
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', default="./data/nnUNet_raw/Podatki", help='Pot do nnU-Net podatkov')
-parser.add_argument('--output_path', default="./output_final", help='Pot za shranjevanje modela')
-parser.add_argument('--params_path', default="", help='Pot do params.json za hiperparametre')
-args = parser.parse_args()
+# Glavna mapa za podatke (Slovensko ime)
+glavna_mapa = "./data/nnUNet_raw/Podatki"
 
-# Nalaganje parametrov iz JSON
-params = {
-    'lr': 0.001,
-    'epochs': 50,
-    'batch_size': 1,
-    'patch_size': (96, 96, 96),
-}
-if args.params_path and os.path.exists(args.params_path):
-    with open(args.params_path, 'r') as f:
-        params.update(json.load(f))
+# Priprava map (Počistimo staro, če obstaja)
+if os.path.exists(glavna_mapa):
+    shutil.rmtree(glavna_mapa)
 
-# Ustvari mapo na začetku (za finalno shranjevanje)
-os.makedirs(args.output_path, exist_ok=True)
+# Ustvarimo podmape
+# Opomba: imagesTr/Ts so standardna imena, ki jih raje pustimo zaradi kompatibilnosti
+os.makedirs(f"{glavna_mapa}/imagesTr", exist_ok=True)       # Trening slike
+os.makedirs(f"{glavna_mapa}/labelsTr", exist_ok=True)       # Trening maske
+os.makedirs(f"{glavna_mapa}/imagesTs", exist_ok=True)       # Testne slike (15 kom)
+os.makedirs(f"{glavna_mapa}/vhod_inferenca", exist_ok=True) # Inferenca slike (5 kom)
+os.makedirs(f"{glavna_mapa}/testne_labele", exist_ok=True)  # Rešitve za test
 
-# 1. Podatki (brez splita – vsi za trening)
-print("Iščem slike...")
-slike = sorted(glob.glob(f"{args.data_path}/imagesTr/*.nii.gz"))
-podatki = []
-for slika in slike:
-    labela = slika.replace("imagesTr", "labelsTr").replace("_0000.nii.gz", ".nii.gz")
-    if os.path.exists(labela):
-        podatki.append({"image": slika, "label": labela})
+# --- 2. ISKANJE IN SORTIRANJE ---
+datoteke = []
+print("Iščem datoteke na disku...")
+for koren in izvorne_mape:
+    if os.path.exists(koren):
+        slike = glob.glob(f"{koren}/*.img.nii.gz")
+        for slika in slike:
+            labela = slika.replace(".img.nii.gz", ".label.nii.gz")
+            if os.path.exists(labela):
+                datoteke.append((slika, labela))
 
-print(f"Našel {len(podatki)} parov za trening (vsi uporabljeni).")
+# Sortiranje po številki v imenu (nujno za ponovljivost!)
+datoteke.sort(key=lambda x: int(os.path.basename(x[0]).split('.')[0]))
 
-# 2. Transformacije
-transforms = Compose([
-    LoadImaged(keys=["image", "label"]),
-    EnsureChannelFirstd(keys=["image", "label"]),
-    ScaleIntensityd(keys=["image"]),
-    Resized(keys=["image", "label"], spatial_size=params['patch_size'], mode=("trilinear", "nearest")),
-    EnsureTyped(keys=["image", "label"]),
-])
+print(f"Našel {len(datoteke)} parov.")
 
-ds = CacheDataset(data=podatki, transform=transforms, cache_rate=1.0)
-loader = DataLoader(ds, batch_size=params['batch_size'], shuffle=True, num_workers=2)
+# --- 3. KOPIRANJE (20 + 5 + 15 = 40) ---
+limit = min(20, len(datoteke))
+print(f"Pripravljam {limit} slik...")
 
-# 3. Model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Device: {device}")
-
-model = MedNeXt(
-    in_channels=1, n_channels=32, n_classes=2, exp_r=2, kernel_size=3,
-    deep_supervision=False, do_res=True, do_res_up_down=True,
-    block_counts=[2, 2, 2, 2, 2, 2, 2, 2, 2]
-).to(device)
-
-optimizer = optim.AdamW(model.parameters(), lr=params['lr'])
-loss_func = DiceCELoss(softmax=True, to_onehot_y=True)
-
-# 4. Trening (samo loss, brez sproti shranjevanja)
-print("Začenjam učenje...")
-for epoch in tqdm(range(params['epochs']), desc="Napredek"):
-    model.train()
-    epoch_loss = 0
-    steps = 0
+for i in tqdm(range(limit)):
+    izvorna_slika, izvorna_labela = datoteke[i]
     
-    for batch in loader:
-        inputs = batch["image"].to(device)
-        labels = batch["label"].to(device)
-        
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        if isinstance(outputs, (list, tuple)):
-            outputs = outputs[0]
-        
-        loss = loss_func(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        
-        epoch_loss += loss.item()
-        steps += 1
+    # ID slike (npr. 100)
+    original_id = os.path.basename(izvorna_slika).split('.')[0]
     
-    avg_loss = epoch_loss / steps
-    tqdm.write(f"Epoha {epoch+1}: Loss = {avg_loss:.4f}")
+    # Nova imena
+    nova_slika = f"ImageCAS_{original_id}_0000.nii.gz"
+    nova_labela = f"ImageCAS_{original_id}.nii.gz"
 
-# Finalni model (samo na koncu)
-torch.save(model.state_dict(), os.path.join(args.output_path, "model_final.pth"))
-print("Finalni model shranjen.")
+    # --- LOGIKA RAZDELITVE ---
+    
+    # 1. TRENING: Prvih 20 (indeksi 0-19)
+    if i < 750:
+        shutil.copy(izvorna_slika, f"{glavna_mapa}/imagesTr/{nova_slika}")
+        shutil.copy(izvorna_labela, f"{glavna_mapa}/labelsTr/{nova_labela}")
+        
+    # 2. INFERENCA: Naslednjih 5 (indeksi 20-24)
+    elif i < 800:
+        shutil.copy(izvorna_slika, f"{glavna_mapa}/vhod_inferenca/{nova_slika}")
+        
+    # 3. TEST: Preostalih 15 (indeksi 25-39)
+    else:
+        shutil.copy(izvorna_slika, f"{glavna_mapa}/imagesTs/{nova_slika}")
+        shutil.copy(izvorna_labela, f"{glavna_mapa}/testne_labele/{nova_labela}")
+
+print(f"Priprava zaključena. Podatki so v: {glavna_mapa}")      

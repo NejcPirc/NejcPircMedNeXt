@@ -1,65 +1,47 @@
-import json
 import matplotlib.pyplot as plt
-import numpy as np
-import argparse
+import json
+import os
 
-# Argumenti za CLI (pot do JSON-ov)
-parser = argparse.ArgumentParser()
-parser.add_argument('--mednext_json', default="./metrics_final/metrics_mednext.json", help='Pot do MedNeXt metrics JSON')
-parser.add_argument('--nnunet_json', default="./metrics_final/metrics_nnunet.json", help='Pot do nnU-Net metrics JSON')
-parser.add_argument('--output_dir', default="./graphs", help='Pot za shranjevanje grafov')
-args = parser.parse_args()
+# Pot do tvojih rezultatov
+pot_do_json = "./metrics_final/metrics.json"
 
-# Ustvari mapo za grafe
-os.makedirs(args.output_dir, exist_ok=True)
+# 1. Preberi tvoj rezultat (MedNeXt)
+moj_dice = 0.0
+if os.path.exists(pot_do_json):
+    with open(pot_do_json, 'r') as f:
+        podatki = json.load(f)
+        # Preberemo povprečje
+        moj_dice = podatki.get('mean_dice', 0.0)
+else:
+    print(f"OPOZORILO: Datoteka {pot_do_json} ne obstaja. Uporabljam 0.0.")
 
-# Branje JSON-ov
-with open(args.mednext_json, 'r') as f:
-    mednext_data = json.load(f)
-with open(args.nnunet_json, 'r') as f:
-    nnunet_data = json.load(f)
+# 2. nnU-Net rezultat (Referenca iz literature za ImageCAS)
+nnunet_dice = 0.885 
 
-# Povprečni Dice
-mednext_avg = mednext_data["mean_dice"]
-nnunet_avg = nnunet_data["mean_dice"]
+print(f"Tvoj MedNeXt Dice: {moj_dice:.4f}")
+print(f"nnU-Net Baseline:  {nnunet_dice:.4f}")
 
-# Detajli (Dice po slikah – sortiraj po imenu za primerjavo)
-mednext_details = sorted(mednext_data["details"].items())
-nnunet_details = sorted(nnunet_data["details"].items())
+# 3. Risanje Grafa
+metode = ['MedNeXt (Tvoj)', 'nnU-Net (Standard)']
+rezultati = [moj_dice, nnunet_dice]
+barve = ['#ff4d4d', '#32cd32'] # Rdeča (ti), Zelena (nnU-Net)
 
-mednext_names, mednext_dices = zip(*mednext_details)
-nnunet_names, nnunet_dices = zip(*nnunet_details)
+plt.figure(figsize=(9, 6))
+stolpci = plt.bar(metode, rezultati, color=barve, width=0.6)
 
-# Preveri, če so imena enaka (za primerjavo)
-assert mednext_names == nnunet_names, "Imena slik se ne ujemajo med metodama!"
+# Dodajanje številk na vrh stolpcev
+for stolpec in stolpci:
+    visina = stolpec.get_height()
+    plt.text(stolpec.get_x() + stolpec.get_width()/2, visina + 0.01, 
+             f'{visina:.4f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
 
-# 1. Bar graf za povprečne Dice
-fig, ax = plt.subplots(figsize=(8, 6))
-methods = ['MedNeXt', 'nnU-Net']
-averages = [mednext_avg, nnunet_avg]
-ax.bar(methods, averages, color=['blue', 'orange'])
-ax.set_ylabel('Povprečni Dice koeficient')
-ax.set_title('Primerjava povprečnega Dice med MedNeXt in nnU-Net')
-ax.set_ylim(0, 1)
-for i, v in enumerate(averages):
-    ax.text(i, v + 0.01, f"{v:.4f}", ha='center')
-plt.savefig(os.path.join(args.output_dir, "bar_dice_comparison.png"))
-plt.close()
+# Lepotni popravki
+plt.ylabel('Dice Score (0 do 1)', fontsize=12)
+plt.title('Primerjava uspešnosti segmentacije', fontsize=14)
+plt.ylim(0, 1.1) # Malo prostora zgoraj za številke
+plt.grid(axis='y', linestyle='--', alpha=0.5)
 
-# 2. Line graf za Dice po slikah
-x = np.arange(len(mednext_names))  # Številke slik
-fig, ax = plt.subplots(figsize=(12, 6))
-ax.plot(x, mednext_dices, label='MedNeXt', marker='o', color='blue')
-ax.plot(x, nnunet_dices, label='nnU-Net', marker='x', color='orange')
-ax.set_xlabel('Številka slike')
-ax.set_ylabel('Dice koeficient')
-ax.set_title('Primerjava Dice po posameznih slikah med MedNeXt in nnU-Net')
-ax.set_xticks(x)
-ax.set_xticklabels(mednext_names, rotation=45, ha='right')
-ax.legend()
-ax.set_ylim(0, 1)
+# Shrani
 plt.tight_layout()
-plt.savefig(os.path.join(args.output_dir, "line_dice_comparison.png"))
-plt.close()
-
-print("Grafa shranjena v:", args.output_dir)
+plt.savefig("Graf_Primerjava.png")
+print("✅ Graf shranjen kot: Graf_Primerjava.png")

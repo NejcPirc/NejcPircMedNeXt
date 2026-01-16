@@ -1,7 +1,7 @@
 import os, time
 
 def zazeni(cmd):
-    print(f"\n🚀 ZAGANJAM: {cmd}")
+    print(f"\n Zaganjam: {cmd}")
     os.system(f"python3 {cmd}")
 
 # 1. Priprava ni potrebna (beremo direktno)
@@ -18,4 +18,4 @@ zazeni("run_test.py")
 
 zazeni("Vizualizacija.py")
 
-print("\n🎉 Vse končano!")
+print("\n Končano")
