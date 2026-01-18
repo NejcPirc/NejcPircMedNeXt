@@ -6,8 +6,8 @@ Metoda: MedNeXt (Convolutional Neural Network)
 
 ## Segmentacija koronarnih arterij z metodo MedNeXt
 ![alt text](MedNeXt.png)
-1. Predstavitev izziva
-Bolezni srca in ožilja so vodilni vzrok smrti po svetu. Natančna segmentacija koronarnih arterij na 3D CTA (Computed Tomography Angiography) slikah je ključna za diagnozo.
+## Predstavitev izziva
+Bolezni srca in ožilja so vodilni vzrok smrti po svetu. Natančna segmentacija koronarnih arterij na 3D CTA (Computed Tomography Angiography) sgit commit -m "Finalna verzija: Vse skripte (Train, Infer, Test) in Dockerfile"likah je ključna za diagnozo.
 
 Gre za tehnično zahteven problem zaradi specifike anatomije:
 -Tanke in vijugaste strukture: Žile so ozke in se razvejano širijo skozi volumen.
@@ -15,7 +15,7 @@ Gre za tehnično zahteven problem zaradi specifike anatomije:
 
 Za reševanje tega problema je uporabljen obsežen javni nabor podatkov ImageCAS (1000 3D slik).
 
-2. Metoda: MedNeXt
+## Metoda: MedNeXt
 Za rešitev izziva sem uporabil arhitekturo MedNeXt, ki predstavlja sodobno evolucijo konvolucijskih nevronskih mrež za medicinsko segmentacijo.
 
 Kako deluje?
@@ -32,7 +32,7 @@ V primerjavi s klasičnimi metodami (U-Net) ali novejšimi Transformerji (Swin-U
 
 -Residual Connections: Dodatne povezave v blokih (ResBlock) omogočajo stabilnejše učenje in boljši prenos informacij.
 
-3. Implementacija in Arhitektura
+## Implementacija in Arhitektura
 
 -Vhodni podatki: 3D izrezi (patches) velikosti 96x96x96. Učenje na celotni sliki ni mogoče zaradi omejitev GPU pomnilnika, zato uporabljamo patch-based training.
 -Encoder: Zaporedje MedNeXt blokov zmanjšuje ločljivost in ekstrahira značilnosti na več ravneh.
