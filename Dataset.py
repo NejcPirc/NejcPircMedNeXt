@@ -42,7 +42,7 @@ datoteke.sort(key=lambda x: int(os.path.basename(x[0]).split('.')[0]))
 print(f"Našel {len(datoteke)} parov.")
 
 # --- 3. KOPIRANJE (20 + 5 + 15 = 40) ---
-limit = min(20, len(datoteke))
+limit = min(1000, len(datoteke))
 print(f"Pripravljam {limit} slik...")
 
 for i in tqdm(range(limit)):

@@ -1,45 +1,53 @@
 import matplotlib.pyplot as plt
 
-# --- TVOJI PODATKI (Prepisani iz tvojega loga) ---
+# --- TVOJI PODATKI (200 Epoh) ---
+# Prepisano iz tvojega loga
 losses = [
-    0.2149, 0.1503, 0.1425, 0.1355, 0.1319, 0.1279, 0.1249, 0.1219, 0.1198, 0.1169,
-    0.1147, 0.1123, 0.1094, 0.1067, 0.1054, 0.1027, 0.1017, 0.0984, 0.0960, 0.0944,
-    0.0928, 0.0918, 0.0900, 0.0894, 0.0861, 0.0852, 0.0843, 0.0827, 0.0822, 0.0816,
-    0.0794, 0.0785, 0.0774, 0.0766, 0.0745, 0.0741, 0.0741, 0.0722, 0.0721, 0.0720,
-    0.0696, 0.0674, 0.0674, 0.0690, 0.0668, 0.0647, 0.0650, 0.0648, 0.0642, 0.0636,
-    0.0623, 0.0613, 0.0604, 0.0600, 0.0590, 0.0598, 0.0578, 0.0569, 0.0569, 0.0565,
-    0.0554, 0.0559, 0.0560, 0.0539, 0.0539, 0.0543, 0.0530, 0.0517, 0.0523, 0.0527,
-    0.0519, 0.0500, 0.0500, 0.0501, 0.0495, 0.0497, 0.0489, 0.0482, 0.0493, 0.0473,
-    0.0467, 0.0462, 0.0466, 0.0464, 0.0459, 0.0455, 0.0451, 0.0445, 0.0443
+    0.2527, 0.1600, 0.1467, 0.1398, 0.1347, 0.1306, 0.1284, 0.1253, 0.1240, 0.1208,
+    0.1183, 0.1163, 0.1134, 0.1109, 0.1077, 0.1047, 0.1013, 0.0977, 0.0954, 0.0923,
+    0.0891, 0.0872, 0.0835, 0.0817, 0.0793, 0.0787, 0.0749, 0.0741, 0.0727, 0.0707,
+    0.0690, 0.0670, 0.0658, 0.0651, 0.0639, 0.0620, 0.0609, 0.0606, 0.0594, 0.0577,
+    0.0570, 0.0559, 0.0562, 0.0560, 0.0538, 0.0525, 0.0515, 0.0520, 0.0514, 0.0507,
+    0.0485, 0.0494, 0.0498, 0.0483, 0.0469, 0.0462, 0.0463, 0.0457, 0.0444, 0.0444,
+    0.0442, 0.0439, 0.0435, 0.0430, 0.0414, 0.0415, 0.0411, 0.0411, 0.0400, 0.0401,
+    0.0406, 0.0398, 0.0395, 0.0382, 0.0372, 0.0373, 0.0391, 0.0399, 0.0365, 0.0362,
+    0.0362, 0.0359, 0.0363, 0.0358, 0.0347, 0.0399, 0.0361, 0.0336, 0.0334, 0.0337,
+    0.0331, 0.0342, 0.0331, 0.0328, 0.0332, 0.0330, 0.0324, 0.0322, 0.0322, 0.0312,
+    0.0320, 0.0307, 0.0309, 0.0315, 0.0310, 0.0303, 0.0305, 0.0304, 0.0293, 0.0299,
+    0.0294, 0.0294, 0.0292, 0.0290, 0.0281, 0.0290, 0.0286, 0.0281, 0.0280, 0.0286,
+    0.0281, 0.0273, 0.0274, 0.0268, 0.0270, 0.0269, 0.0278, 0.0274, 0.0271, 0.0264,
+    0.0253, 0.0260, 0.0263, 0.0257, 0.0256, 0.0259, 0.0261, 0.0254, 0.0249, 0.0261,
+    0.0252, 0.0244, 0.0242, 0.0249, 0.0251, 0.0246, 0.0246, 0.0236, 0.0233, 0.0259,
+    0.0243, 0.0232, 0.0240, 0.0241, 0.0233, 0.0233, 0.0239, 0.0252, 0.0231, 0.0233,
+    0.0226, 0.0219, 0.0230, 0.0242, 0.0225, 0.0223, 0.0223, 0.0231, 0.0221, 0.0220,
+    0.0227, 0.0221, 0.0214, 0.0218, 0.0220, 0.0217, 0.0212, 0.0214, 0.0209, 0.0213,
+    0.0225, 0.0213, 0.0219, 0.0218, 0.0212, 0.0204, 0.0204, 0.0226, 0.0215, 0.0207,
+    0.0200, 0.0199, 0.0208, 0.0203, 0.0199, 0.0213, 0.0226, 0.0203, 0.0196, 0.0199
 ]
 
-# Ustvarimo seznam epoh (od 1 do 89)
 epochs = range(1, len(losses) + 1)
 
-# --- IZRIS GRAFA ---
-plt.figure(figsize=(10, 6))
+# --- IZRIS ---
+plt.figure(figsize=(12, 6))
 
-# Narišemo črto
-plt.plot(epochs, losses, label='Training Loss', color='blue', linewidth=2)
+plt.plot(epochs, losses, label='Training Loss', color='#1f77b4', linewidth=2)
 
-# Dodamo naslove
-plt.title('Potek učenja modela (Training Loss)', fontsize=16)
+# Oznacimo minimum
+min_loss = min(losses)
+min_epoch = losses.index(min_loss) + 1
+plt.scatter(min_epoch, min_loss, color='red', zorder=5)
+plt.text(min_epoch, min_loss + 0.005, f'Min: {min_loss:.4f}', ha='center', fontweight='bold', color='red')
+
+# Naslovi in mreža
+plt.title('Potek učenja modela - MedNeXt (200 Epoh)', fontsize=16)
 plt.xlabel('Epohe', fontsize=12)
-plt.ylabel('Izguba (Loss)', fontsize=12)
-
-# Dodamo mrežo za lažje branje
-plt.grid(True, linestyle='--', alpha=0.7)
-
-# Oznacimo začetno in končno točko
-plt.scatter(1, losses[0], color='red', zorder=5)
-plt.text(1, losses[0], f'{losses[0]:.4f}', verticalalignment='bottom')
-
-plt.scatter(len(losses), losses[-1], color='green', zorder=5)
-plt.text(len(losses), losses[-1], f'{losses[-1]:.4f}', verticalalignment='top')
-
+plt.ylabel('DiceCE Loss', fontsize=12)
+plt.grid(True, linestyle='--', alpha=0.6)
 plt.legend()
-plt.tight_layout()
 
-# Shranimo sliko
-plt.savefig("Graf_Loss.png", dpi=300)
-print("✅ Graf je shranjen kot 'Graf_Loss.png'")
+# Shrani
+ime_slike = "Graf_Loss_200.png"
+plt.tight_layout()
+plt.savefig(ime_slike, dpi=300)
+
+print(f"✅ Graf ustvarjen: {ime_slike}")
