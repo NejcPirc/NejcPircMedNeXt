@@ -35,6 +35,9 @@ V primerjavi s klasičnimi metodami (U-Net) ali novejšimi Transformerji (Swin-U
 ## Implementacija in Arhitektura
 
 -Vhodni podatki: 3D izrezi (patches) velikosti 96x96x96. Učenje na celotni sliki ni mogoče zaradi omejitev GPU pomnilnika, zato uporabljamo patch-based training.
+
 -Encoder: Zaporedje MedNeXt blokov zmanjšuje ločljivost in ekstrahira značilnosti na več ravneh.
+
 -Decoder: Rekonstruira segmentacijsko masko z združevanjem značilnosti iz encoderja.
+
 -Trening: Uporabljen je DiceCELoss za reševanje problema neuravnoteženih razredov ter AdamW optimizator z CosineAnnealing urnikom učenja.
