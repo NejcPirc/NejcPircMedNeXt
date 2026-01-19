@@ -10,7 +10,7 @@ class MedNeXt(nn.Module):
         in_channels: int, 
         n_channels: int,
         n_classes: int, 
-        exp_r: int = 4,                            # Expansion ratio as in Swin Transformers
+        exp_r: int = 4,                            
         kernel_size: int = 7,                      # Ofcourse can test kernel_size
         enc_kernel_size: int = None,
         dec_kernel_size: int = None,
