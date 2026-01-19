@@ -5,32 +5,27 @@ Metoda: MedNeXt (Convolutional Neural Network)
 
 
 ## Segmentacija koronarnih arterij z metodo MedNeXt
-![alt text](MedNeXt.png)
-## Predstavitev izziva
-Bolezni srca in ožilja so vodilni vzrok smrti po svetu. Natančna segmentacija koronarnih arterij na 3D CTA (Computed Tomography Angiography) sgit commit -m "Finalna verzija: Vse skripte (Train, Infer, Test) in Dockerfile"likah je ključna za diagnozo.
 
-Gre za tehnično zahteven problem zaradi specifike anatomije:
--Tanke in vijugaste strukture: Žile so ozke in se razvejano širijo skozi volumen.
--Neuravnoteženi razredi (Class Imbalance): Žile zavzemajo izjemno majhen del volumna (< 1 %) v primerjavi z ozadjem, kar otežuje učenje modela.
+## Predstavitev izziva
+Bolezni srca in ožilja so vodilni vzrok smrti po vsem svetu. Natančna segmentacija koronarnih
+arterij (CAS - Coronary Artery Segmentation) je ključna za odkrivanje stenoze (zoženja),
+načrtovanje stentiranja in simulacijo pretoka krvi.
+
+Cilj tega izziva je razviti metodo za avtomatsko segmentacijo koronarnih arterij na 3D medicinskih slikah (CTA). Izziv je težak zaradi tanke, vijugaste strukture žil in prisotnosti šuma ter
+artefaktov.
 
 Za reševanje tega problema je uporabljen obsežen javni nabor podatkov ImageCAS (1000 3D slik).
 
 ## Metoda: MedNeXt
-Za rešitev izziva sem uporabil arhitekturo MedNeXt, ki predstavlja sodobno evolucijo konvolucijskih nevronskih mrež za medicinsko segmentacijo.
 
-Kako deluje?
-MedNeXt ohranja preverjeno strukturo kodirnika in dekodirnika (Encoder-Decoder), značilno za U-Net, vendar standardne konvolucijske bloke nadomešča s ConvNeXt bloki. Ti so zasnovani za boljšo skalabilnost in učinkovitost pri obdelavi 3D podatkov.
+Za rešitev izziva je uporabljena arhitektura MedNeXt, ki nadgrajuje klasični U-Net s sodobnimi ConvNeXt bloki za učinkovitejšo obdelavo 3D podatkov.
 
-Zakaj sem izbrali MedNeXt?
-V primerjavi s klasičnimi metodami (U-Net) ali novejšimi Transformerji (Swin-UNetr), MedNeXt ponuja specifične prednosti za segmentacijo tankih žil:
+# Ključne prednosti za segmentacijo žil:
+-Velika jedra (5x5x5): Zajamejo širši kontekst, kar je nujno za ohranjanje kontinuitete dolgih in tankih žil.
 
--Velika jedra (Large Kernels): Uporabljena so konvolucijska jedra velikosti 5x5x5. To modelu omogoča zajemanje širšega konteksta, kar je ključno za ohranjanje kontinuitete dolgih žil (preprečuje "prekinjene" segmentacije).
+-Deep Supervision: Model se uči na 5 nivojih hkrati, kar izboljša zaznavanje finih detajlov in preprečuje izgubo gradientov.
 
--Inverted Bottleneck: Uporaba blokov, ki kanale najprej razširijo (expansion ratio = 2) in nato stisnejo. To omogoča učenje kompleksnejših značilnosti brez prevelike porabe spomina.
-
--Deep Supervision: Model se uči na 5 različnih nivojih globine hkrati. To izboljša pretok gradientov in prisili model, da se nauči detajlov tudi v globokih plasteh mreže.
-
--Residual Connections: Dodatne povezave v blokih (ResBlock) omogočajo stabilnejše učenje in boljši prenos informacij.
+-Učinkovitost: Z uporabo Inverted Bottleneck in Residual Connections omogoča stabilno učenje kompleksnih značilnosti ob manjši porabi spomina.
 
 ## Implementacija in Arhitektura
 
@@ -41,3 +36,4 @@ V primerjavi s klasičnimi metodami (U-Net) ali novejšimi Transformerji (Swin-U
 -Decoder: Rekonstruira segmentacijsko masko z združevanjem značilnosti iz encoderja.
 
 -Trening: Uporabljen je DiceCELoss za reševanje problema neuravnoteženih razredov ter AdamW optimizator z CosineAnnealing urnikom učenja.
+<img src="MedNeXt.png" alt="Arhitektura MedNeXt" width="800">
