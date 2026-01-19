@@ -1,10 +1,7 @@
-# Segmentacija koronarnih arterij - MedNeXt (Izziv AMS 2025)
+# Segmentacija koronarnih arterij - MedNeXt (Izziv AMS 2025/2026)
 Študent: Nejc Pirc
 Predmet: AMS (Analiza Medicinskih Slik)
 Metoda: MedNeXt (Convolutional Neural Network)
-
-
-## Segmentacija koronarnih arterij z metodo MedNeXt
 
 ## Predstavitev izziva
 Bolezni srca in ožilja so vodilni vzrok smrti po vsem svetu. Natančna segmentacija koronarnih
