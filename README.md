@@ -17,7 +17,7 @@ Za reševanje tega problema je uporabljen obsežen javni nabor podatkov ImageCAS
 
 Za rešitev izziva je uporabljena arhitektura MedNeXt, ki nadgrajuje klasični U-Net s sodobnimi ConvNeXt bloki za učinkovitejšo obdelavo 3D podatkov.
 
-# Ključne prednosti za segmentacijo žil:
+## Ključne prednosti za segmentacijo žil:
 -Velika jedra (5x5x5): Zajamejo širši kontekst, kar je nujno za ohranjanje kontinuitete dolgih in tankih žil.
 
 -Deep Supervision: Model se uči na 5 nivojih hkrati, kar izboljša zaznavanje finih detajlov in preprečuje izgubo gradientov.
@@ -33,4 +33,4 @@ Za rešitev izziva je uporabljena arhitektura MedNeXt, ki nadgrajuje klasični U
 -Decoder: Rekonstruira segmentacijsko masko z združevanjem značilnosti iz encoderja.
 
 -Trening: Uporabljen je DiceCELoss za reševanje problema neuravnoteženih razredov ter AdamW optimizator z CosineAnnealing urnikom učenja.
-<img src="MedNeXt.png" alt="Arhitektura MedNeXt" width="800">
+<img src="MedNeXt.png" alt="Arhitektura MedNeXt" width="500">
