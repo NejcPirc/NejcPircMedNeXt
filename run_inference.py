@@ -94,7 +94,11 @@ with torch.no_grad():
 
         pred = torch.argmax(outputs, dim=1).cpu().numpy()[0].astype(np.uint8)
         
-        nib.save(nib.Nifti1Image(pred, np.eye(4)), f"{args.output_path}/{ime}")
-        print(f"-> Shranjeno.")
+        orig_nii = nib.load(path_original)
+        orig_affine = orig_nii.affine
+        
+        # Pri shranjevanju uporabimo originalno matriko, ne np.eye(4)!
+        nib.save(nib.Nifti1Image(pred, orig_affine), f"{args.output_path}/{ime}")
+        print(f" -> Shranjeno (s pravilnimi koordinatami).")
 
 print("Koncano.")
