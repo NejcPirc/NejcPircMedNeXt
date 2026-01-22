@@ -7,7 +7,7 @@ from matplotlib.colors import ListedColormap
 
 # --- POTI ---
 # Tvoje napovedi (rezultati)
-pred_dir = "./predictions_final"  # Ali "./Napovedi_Koncne" - preveri, kje imas
+pred_dir = "./Napovedi_Koncne"  # Ali "./Napovedi_Koncne" - preveri, kje imas
 
 
 # Kje so originalne slike (na FastDataMama)
@@ -27,7 +27,7 @@ if len(napovedi) == 0:
     exit()
 
 # Izberemo sliko (spremeni indeks [0], [1], [2] za druge slike)
-pot_napovedi = napovedi[2] 
+pot_napovedi = napovedi[10] 
 
 ime_datoteke = os.path.basename(pot_napovedi) # npr. ImageCAS_113_0000.nii.gz
 print(f"Prikazujem: {ime_datoteke}")

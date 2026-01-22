@@ -1,3 +1,6 @@
+# To je glavna datoteka, ki definira arhitekturo tvojega modela. 
+# MedNeXt je v bistvu sodoben U-Net, ki uporablja posebne gradnike (ConvNeXt bloke), da je boljši in hitrejši
+
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
