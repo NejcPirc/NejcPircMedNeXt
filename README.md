@@ -26,6 +26,9 @@ Celoten postopek je zapakiran v Docker kontejner. Za dostop do podatkov in grafi
 ```bash
 docker build -t nejcpircmednext .
 
+
+---
+
 ## 3. Zagon programa
 
 ```bash
