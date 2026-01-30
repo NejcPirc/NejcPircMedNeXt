@@ -1,4 +1,4 @@
-# Segmentacija koronarnih arterij - MedNeXt
+w# Segmentacija koronarnih arterij - MedNeXt
 **Izziv AMS 2025**  
 **Študent:** Nejc Pirc
 
@@ -25,6 +25,15 @@ Celoten postopek je zapakiran v Docker kontejner. Za dostop do podatkov in grafi
 
 ```bash
 docker build -t nejcpircmednext .
+
+## 3. Zagon programa
+
+```bash
+docker run --gpus all --ipc=host --rm \
+  -v .:/workspace/ \
+  -v /media/FastDataMama:/media/FastDataMama \
+  nejcpircmednext python3 run_all.py
+
 
 
 
