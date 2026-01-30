@@ -4,11 +4,17 @@ Izziv AMS 2025
 Rešitev za avtomatsko segmentacijo koronarnih arterij na 3D CTA slikah z uporabo arhitekture MedNeXt.
 
 ## Podatki
+
 Lokacija: /media/FastDataMama/izziv/data
+
 Struktura: Dataset ImageCAS (1000 slik).
+
 Razdelitev (Split-1):
+
 Train: 750 slik.
+
 Inference/Val: 50 slik.
+
 Test: 200 slik.
 
 ## Zagon celotnega postopka
