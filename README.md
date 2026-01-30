@@ -37,9 +37,11 @@ docker run --gpus all --ipc=host --rm \
   -v .:/workspace/ \
   -v /media/FastDataMama:/media/FastDataMama \
   nejcpircmednext python3 run_all.py
+ ```
+# Training modela
 
-
----
-
+```bash
+docker run --gpus all --ipc=host -v .:/workspace/ -v /media/FastDataMama:/media/FastDataMama nejcpircmednext python3 run_train.py
+```
 
 
