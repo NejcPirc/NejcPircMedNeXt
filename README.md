@@ -38,5 +38,7 @@ docker run --gpus all --ipc=host --rm \
   nejcpircmednext python3 run_all.py
 
 
+---
+
 
 
