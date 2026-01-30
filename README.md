@@ -1,36 +1,41 @@
-# Segmentacija koronarnih arterij - MedNeXt (Izziv AMS 2025/2026)
+# Segmentacija koronarnih arterij - MedNeXt
+Izziv AMS 2025
 Študent: Nejc Pirc
-Predmet: AMS (Analiza Medicinskih Slik)
-Metoda: MedNeXt (Convolutional Neural Network)
+Rešitev za avtomatsko segmentacijo koronarnih arterij na 3D CTA slikah z uporabo arhitekture MedNeXt.
 
-## Predstavitev izziva
-Bolezni srca in ožilja so vodilni vzrok smrti po vsem svetu. Natančna segmentacija koronarnih
-arterij (CAS - Coronary Artery Segmentation) je ključna za odkrivanje stenoze (zoženja),
-načrtovanje stentiranja in simulacijo pretoka krvi.
+## Podatki
+Lokacija: /media/FastDataMama/izziv/data
+Struktura: Dataset ImageCAS (1000 slik).
+Razdelitev (Split-1):
+Train: 750 slik.
+Inference/Val: 50 slik.
+Test: 200 slik.
 
-Cilj tega izziva je razviti metodo za avtomatsko segmentacijo koronarnih arterij na 3D medicinskih slikah (CTA). Izziv je težak zaradi tanke, vijugaste strukture žil in prisotnosti šuma ter
-artefaktov.
+## Zagon celotnega postopka
 
-Za reševanje tega problema je uporabljen obsežen javni nabor podatkov ImageCAS (1000 3D slik).
+docker run --gpus all --ipc=host --rm \
+  -v .:/workspace/ \
+  -v /media/FastDataMama:/media/FastDataMama \
+  nejcpircmednext python3 run_all.py
 
-## Metoda: MedNeXt
 
-Za rešitev izziva je uporabljena arhitektura MedNeXt, ki nadgrajuje klasični U-Net s sodobnimi ConvNeXt bloki za učinkovitejšo obdelavo 3D podatkov.
+## Opis datotek in skript
 
-## Ključne prednosti za segmentacijo žil:
--Velika jedra (5x5x5): Zajamejo širši kontekst, kar je nujno za ohranjanje kontinuitete dolgih in tankih žil.
+Datoteka	                 Opis
+Priprava_Podatkov.py	     Pripravi strukturo map (imagesTr, labelsTr, imagesTs) in simbolične povezave do originalnih podatkov (Split-1).
+run_train.py	             Izvaja učenje modela. Uporablja Patch-based training (96x96x96), Deep Supervision in augmentacije (rotacije, šum). Shrani model_best.pth.
+run_inference.py	         Naloži naučen model in izvede segmentacijo na testnih slikah (200 kom) z uporabo metode Sliding Window Inference.
+run_test.py	               Primerja napovedi z referenčnimi maskami. Izračuna Dice Score in clDice (topologija) ter shrani rezultate v metrics.json.
+run_all.py	               Krovna skripta, ki požene zgornje štiri skripte v pravilnem vrstnem redu.
+Vizualizacija.py	         Generira sliko slika_primerjava_full.png za vizualno primerjavo (Original vs. GT vs. Napoved).
+Dockerfile	               Konfiguracija okolja (PyTorch, MONAI, sistemske knjižnice).
 
--Deep Supervision: Model se uči na 5 nivojih hkrati, kar izboljša zaznavanje finih detajlov in preprečuje izgubo gradientov.
+## O metodi (MedNeXt)
+Uporabljena je arhitektura MedNeXt Small, ki je specializirana za segmentacijo tankih struktur.
 
--Učinkovitost: Z uporabo Inverted Bottleneck in Residual Connections omogoča stabilno učenje kompleksnih značilnosti ob manjši porabi spomina.
+Ključne značilnosti:
 
-## Implementacija in Arhitektura
+Velika jedra (5x5x5): Zajamejo širši kontekst za ohranjanje kontinuitete žil.
+ConvNeXt bloki: Uporaba "Inverted Bottleneck" za učinkovitost.
+Deep Supervision: Učenje na 5 nivojih globine hkrati.
 
--Vhodni podatki: 3D izrezi (patches) velikosti 96x96x96. Učenje na celotni sliki ni mogoče zaradi omejitev GPU pomnilnika, zato uporabljamo patch-based training.
-
--Encoder: Zaporedje MedNeXt blokov zmanjšuje ločljivost in ekstrahira značilnosti na več ravneh.
-
--Decoder: Rekonstruira segmentacijsko masko z združevanjem značilnosti iz encoderja.
-
--Trening: Uporabljen je DiceCELoss za reševanje problema neuravnoteženih razredov ter AdamW optimizator z CosineAnnealing urnikom učenja.
-<img src="MedNeXt.png" alt="Arhitektura MedNeXt" width="500">
