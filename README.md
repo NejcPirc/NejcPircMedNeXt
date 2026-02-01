@@ -65,9 +65,4 @@ Za rešitev izziva je uporabljena arhitektura MedNeXt, ki je specializirana za s
 * Arhitektura: ConvNeXt bloki z "Inverted Bottleneck" zasnovo.
 * Deep Supervision: Učenje na 5 nivojih globine za boljše zaznavanje detajlov in hitrejšo konvergenco.
 
-### Primerjava z nnU-Net (Baseline):
-
-Rezultati so primerjani z uradnim rezultatom nnU-Net na ImageCAS datasetu (Dice ~0.885).
-Zaradi časovnih omejitev nismo trenirali nnU-Neta, so pa vključena navodila za njegovo reprodukcijo:
-
 
