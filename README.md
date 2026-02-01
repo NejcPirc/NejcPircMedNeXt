@@ -24,7 +24,7 @@ Zaradi velikosti dataseta se podatki ne kopirajo lokalno v kontejner, ampak se b
 Celoten postopek je zapakiran v Docker kontejner. Za dostop do podatkov in grafične kartice so potrebne spodnje nastavitve.
 
 ```bash
-docker build -t nejcpircmednext
+docker build -t nejcpircmednext.
 ```
 
 
