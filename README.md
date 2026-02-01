@@ -47,9 +47,9 @@ docker run --gpus all --ipc=host --rm \
 | Datoteka | Opis |
 | :--- | :--- |
 | `Priprava_Podatkov.py` | Pripravi strukturo map (`imagesTr`, `labelsTr`, `imagesTs`) v mapi `./data` in razporedi slike glede na Split-1. |
-| `run_train.py` | Izvaja učenje modela na 750 slikah. Uporablja **Patch-based training** (96×96×96), **Deep Supervision** in napredne augmentacije. Shrani `model_best.pth`. |
-| `run_inference.py` | Naloži naučen model in izvede segmentacijo na 200 testnih slikah z uporabo metode **Sliding Window Inference** (drsno okno). |
-| `run_test.py` | Primerja napovedi z referenčnimi maskami. Izračuna **Dice Score** in **clDice** (topološka metrika) ter shrani rezultate v `metrics.json`. |
+| `run_train.py` | Izvaja učenje modela. Uporablja Patch-based training (96×96×96),*Deep Supervision in napredne augmentacije. Shrani `model_best.pth`. |
+| `run_inference.py` | Naloži naučen model in izvede segmentacijo na testnih slikah z uporabo metode Sliding Window Inference (drsno okno). |
+| `run_test.py` | Primerja napovedi z referenčnimi maskami. Izračuna Dice Score ter shrani rezultate v `metrics.json`. |
 | `run_all.py` | Krovna skripta, ki požene zgornje štiri korake v pravilnem vrstnem redu. |
 | `Vizualizacija.py` | Generira sliko `slika_primerjava_full.png` za vizualno primerjavo (Original vs. GT vs. Napoved). |
 | `Izris_Loss_Log.py` | Iz log datoteke izlušči podatke in izriše graf poteka učenja (Loss curve). |
