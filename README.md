@@ -2,13 +2,13 @@
 **Izziv AMS 2025**  
 **Študent:** Nejc Pirc
 
-Repozitorij vsebuje rešitev za avtomatsko segmentacijo koronarnih arterij na 3D CTA slikah z uporabo arhitekture **MedNeXt**. Rešitev je optimizirana za delovanje v Docker okolju na strežniški infrastrukturi.
+Repozitorij vsebuje rešitev za avtomatsko segmentacijo koronarnih arterij na 3D CTA slikah z uporabo arhitekture MedNeXt. Rešitev je optimizirana za delovanje v Docker okolju na strežniški infrastrukturi.
 
 ---
 
 ##  1. Podatki
 
-Zaradi velikosti dataseta se podatki **ne kopirajo lokalno** v kontejner, ampak se berejo neposredno z diska strežnika. Skripte so prilagojene za to strukturo.
+Zaradi velikosti dataseta se podatki ne kopirajo lokalno v kontejner, ampak se berejo neposredno z diska strežnika. Skripte so prilagojene za to strukturo.
 
 *   **Lokacija na strežniku:** `/media/FastDataMama/izziv/data`
 *   **Dataset:** ImageCAS (1000 3D slik)
@@ -61,9 +61,9 @@ Za rešitev izziva je uporabljena arhitektura MedNeXt, ki je specializirana za s
 
 ### Specifike naše implementacije:
 
-* **Kernel Size:** 5×5×5 (zajame širši kontekst za ohranjanje kontinuitete žil).
-* **Arhitektura:** ConvNeXt bloki z "Inverted Bottleneck" zasnovo.
-* **Deep Supervision:** Učenje na 5 nivojih globine za boljše zaznavanje detajlov in hitrejšo konvergenco.
+* Kernel Size: 5×5×5 (zajame širši kontekst za ohranjanje kontinuitete žil).
+* Arhitektura: ConvNeXt bloki z "Inverted Bottleneck" zasnovo.
+* Deep Supervision: Učenje na 5 nivojih globine za boljše zaznavanje detajlov in hitrejšo konvergenco.
 
 ### Primerjava z nnU-Net (Baseline):
 
