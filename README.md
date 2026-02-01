@@ -42,14 +42,19 @@ docker run --gpus all --ipc=host --rm \
 
 ## 4. Opis datotek
 
-Datoteka	Opis
-run_train.py	Učenje modela (Patch-based, Deep Supervision, Augmentacije).
-run_inference.py	Napovedovanje s Sliding Window metodo.
-run_test.py	Izračun metrik (Dice, clDice, Precision, Recall).
-run_all.py	Krovna skripta za zagon celotnega postopka.
-Vizualizacija.py	Kreiranje slik prereza za poročilo.
-Grafi.py	Izris grafov uspešnosti.
-mednext_lib/	Implementacija arhitekture MedNeXt.
+## 3. Opis datotek in skript
+
+| Datoteka | Opis |
+| :--- | :--- |
+| `Priprava_Podatkov.py` | Pripravi strukturo map (`imagesTr`, `labelsTr`, `imagesTs`) v mapi `./data` in razporedi slike glede na Split-1. |
+| `run_train.py` | Izvaja učenje modela na 750 slikah. Uporablja **Patch-based training** (96×96×96), **Deep Supervision** in napredne augmentacije. Shrani `model_best.pth`. |
+| `run_inference.py` | Naloži naučen model in izvede segmentacijo na 200 testnih slikah z uporabo metode **Sliding Window Inference** (drsno okno). |
+| `run_test.py` | Primerja napovedi z referenčnimi maskami. Izračuna **Dice Score** in **clDice** (topološka metrika) ter shrani rezultate v `metrics.json`. |
+| `run_all.py` | Krovna skripta, ki požene zgornje štiri korake v pravilnem vrstnem redu. |
+| `Vizualizacija.py` | Generira sliko `slika_primerjava_full.png` za vizualno primerjavo (Original vs. GT vs. Napoved). |
+| `Izris_Loss_Log.py` | Iz log datoteke izlušči podatke in izriše graf poteka učenja (Loss curve). |
+| `Primerjava_Dice.py` | Izriše graf primerjave našega rezultata z nnU-Net benchmarkom. |
+| `mednext_lib/` | Mapa, ki vsebuje definicijo arhitekture MedNeXt in gradnike (Blocks). |
 
 
 
