@@ -1,4 +1,4 @@
-w# Segmentacija koronarnih arterij - MedNeXt
+# Segmentacija koronarnih arterij - MedNeXt
 **Izziv AMS 2025**  
 **Študent:** Nejc Pirc
 
@@ -38,10 +38,18 @@ docker run --gpus all --ipc=host --rm \
   -v /media/FastDataMama:/media/FastDataMama \
   nejcpircmednext python3 run_all.py
  ```
-# Training modela
 
-```bash
-docker run --gpus all --ipc=host -v .:/workspace/ -v /media/FastDataMama:/media/FastDataMama nejcpircmednext python3 run_train.py
-```
+
+## 4. Opis datotek
+
+Datoteka	Opis
+run_train.py	Učenje modela (Patch-based, Deep Supervision, Augmentacije).
+run_inference.py	Napovedovanje s Sliding Window metodo.
+run_test.py	Izračun metrik (Dice, clDice, Precision, Recall).
+run_all.py	Krovna skripta za zagon celotnega postopka.
+Vizualizacija.py	Kreiranje slik prereza za poročilo.
+Grafi.py	Izris grafov uspešnosti.
+mednext_lib/	Implementacija arhitekture MedNeXt.
+
 
 
