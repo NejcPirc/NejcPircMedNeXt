@@ -40,9 +40,7 @@ docker run --gpus all --ipc=host --rm \
  ```
 
 
-## 4. Opis datotek
-
-## 3. Opis datotek in skript
+## 4. Opis datotek in skript
 
 | Datoteka | Opis |
 | :--- | :--- |
@@ -56,5 +54,20 @@ docker run --gpus all --ipc=host --rm \
 | `Primerjava_Dice.py` | Izriše graf primerjave našega rezultata z nnU-Net benchmarkom. |
 | `mednext_lib/` | Mapa, ki vsebuje definicijo arhitekture MedNeXt in gradnike (Blocks). |
 
+
+## 5. O metodi (MedNeXt)
+
+Za rešitev izziva je uporabljena arhitektura MedNeXt, ki je specializirana za segmentacijo tankih in povezanih struktur.
+
+### Specifike naše implementacije:
+
+* **Kernel Size:** 5×5×5 (zajame širši kontekst za ohranjanje kontinuitete žil).
+* **Arhitektura:** ConvNeXt bloki z "Inverted Bottleneck" zasnovo.
+* **Deep Supervision:** Učenje na 5 nivojih globine za boljše zaznavanje detajlov in hitrejšo konvergenco.
+
+### Primerjava z nnU-Net (Baseline):
+
+Rezultati so primerjani z uradnim rezultatom nnU-Net na ImageCAS datasetu (Dice ~0.885).
+Zaradi časovnih omejitev nismo trenirali nnU-Neta, so pa vključena navodila za njegovo reprodukcijo:
 
 
